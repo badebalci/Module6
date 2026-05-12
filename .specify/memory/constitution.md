@@ -1,50 +1,108 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+- Version change: template-initial -> 1.0.0
+- Modified principles:
+	- Principle slot 1 -> I. Clean Code First
+	- Principle slot 2 -> II. TypeScript Strict Mode Mandatory
+	- Principle slot 3 -> III. JSDoc Documentation Required
+	- Principle slot 4 -> IV. Testing Pyramid Enforcement
+	- Principle slot 5 -> V. Business Logic Coverage Gate
+- Added sections:
+	- Engineering Standards
+	- Workflow and Quality Gates
+- Removed sections:
+	- None
+- Templates requiring updates:
+	- .specify/templates/plan-template.md ✅ updated
+	- .specify/templates/spec-template.md ✅ updated
+	- .specify/templates/tasks-template.md ✅ updated
+	- .specify/templates/commands/*.md ⚠ pending (directory not present)
+- Follow-up TODOs:
+	- None
+-->
+
+# Day5 Task Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Clean Code First
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+All production code MUST prioritize readability, maintainability, and simplicity.
+Functions and modules MUST have single, explicit responsibilities, names MUST be
+intention-revealing, and dead code or speculative abstractions MUST NOT be merged.
+Rationale: clean code reduces defects, onboarding time, and maintenance cost.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### II. TypeScript Strict Mode Mandatory
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+All TypeScript projects and packages MUST compile with strict mode enabled
+(`"strict": true`) and MUST keep strict sub-checks active unless a documented,
+time-bound exception is approved. Use of `any` is prohibited unless accompanied by
+an explicit justification and tracking issue.
+Rationale: strict typing catches classes of defects before runtime.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### III. JSDoc Documentation Required
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+All exported functions, classes, interfaces, type aliases, and non-trivial internal
+business-logic functions MUST include accurate JSDoc covering purpose, parameters,
+return values, thrown errors, and side effects where relevant.
+Rationale: consistent documentation improves correctness, review quality, and reuse.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### IV. Testing Pyramid Enforcement
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+Test suites MUST follow the Testing Pyramid: many unit tests, fewer integration
+tests, and minimal end-to-end tests focused on critical flows. Business logic
+changes MUST include or update unit tests first; integration and end-to-end tests
+MUST validate boundaries and user-critical journeys.
+Rationale: pyramid-aligned testing gives fast feedback and robust confidence.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### V. Business Logic Coverage Gate
+
+Automated test coverage for business-logic code MUST remain at or above 80% line
+coverage. Pull requests that reduce coverage below this threshold MUST NOT be
+merged without explicit exception approval documented in the PR.
+Rationale: a minimum coverage gate protects core behavior against regressions.
+
+## Engineering Standards
+
+- Preferred stack is TypeScript for application and domain logic.
+- `tsconfig` MUST enforce strict mode and disallow unchecked typed escapes.
+- Linting and formatting rules MUST be automated in CI.
+- Every code change touching business logic MUST include corresponding test updates.
+- Public API and domain-level symbols MUST remain JSDoc-complete.
+
+## Workflow and Quality Gates
+
+- Plan phase MUST include a Constitution Check that evaluates all five principles.
+- Specification phase MUST define quality requirements for strict typing,
+  documentation, and testing obligations.
+- Task generation MUST include explicit tasks for strict-mode configuration,
+  JSDoc updates, test implementation across pyramid layers, and coverage validation.
+- Code review MUST reject changes that violate any constitutional MUST unless an
+  approved exception is recorded with owner, scope, and expiration date.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution is the highest authority for engineering process in this
+repository. If other documents conflict, this constitution takes precedence.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+Amendment process:
+
+- Propose changes in a pull request that explains intent, impact, and migration.
+- Obtain approval from repository maintainers.
+- Update dependent templates and guidance files in the same change.
+
+Versioning policy:
+
+- MAJOR for backward-incompatible governance changes or principle removals.
+- MINOR for new principles/sections or materially expanded obligations.
+- PATCH for clarifications, wording improvements, and typo fixes.
+
+Compliance review expectations:
+
+- Every plan, spec, task list, and pull request MUST include constitution compliance
+  evidence.
+- Exceptions MUST include rationale, owner, and expiry date.
+- Quarterly audits SHOULD verify that strict mode, JSDoc coverage, and the testing
+  pyramid remain enforced.
+
+**Version**: 1.0.0 | **Ratified**: 2026-05-12 | **Last Amended**: 2026-05-12
