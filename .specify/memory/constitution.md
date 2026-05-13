@@ -1,24 +1,20 @@
 <!--
 Sync Impact Report
-- Version change: template-initial -> 1.0.0
+- Version change: 1.0.0 -> 1.1.0
 - Modified principles:
-	- Principle slot 1 -> I. Clean Code First
-	- Principle slot 2 -> II. TypeScript Strict Mode Mandatory
-	- Principle slot 3 -> III. JSDoc Documentation Required
-	- Principle slot 4 -> IV. Testing Pyramid Enforcement
-	- Principle slot 5 -> V. Business Logic Coverage Gate
+	- Principle slot 5 -> V. Business Logic Coverage Gate (refined wording)
+	- Added new principle -> VI. Comprehensive Testing Framework
 - Added sections:
-	- Engineering Standards
-	- Workflow and Quality Gates
+	- Testing Framework (8 subsections: Philosophy, Coverage, Types & Org, Naming, Anatomy, Mocking, Quality Criteria, Tools & Frameworks)
 - Removed sections:
 	- None
 - Templates requiring updates:
-	- .specify/templates/plan-template.md ✅ updated
-	- .specify/templates/spec-template.md ✅ updated
-	- .specify/templates/tasks-template.md ✅ updated
-	- .specify/templates/commands/*.md ⚠ pending (directory not present)
+	- .specify/templates/plan-template.md ⚠ pending (add Testing Framework validation)
+	- .specify/templates/spec-template.md ⚠ pending (add testing requirements section)
+	- .specify/templates/tasks-template.md ⚠ pending (add test task categorization)
 - Follow-up TODOs:
-	- None
+	- Align CI/CD templates with new mutation testing gate
+	- Document Stryker configuration for project
 -->
 
 # Day5 Task Constitution
@@ -58,9 +54,156 @@ Rationale: pyramid-aligned testing gives fast feedback and robust confidence.
 ### V. Business Logic Coverage Gate
 
 Automated test coverage for business-logic code MUST remain at or above 80% line
-coverage. Pull requests that reduce coverage below this threshold MUST NOT be
-merged without explicit exception approval documented in the PR.
+coverage and 75% branch coverage. Pull requests that reduce coverage below these
+thresholds MUST NOT be merged without explicit exception approval documented in the PR.
 Rationale: a minimum coverage gate protects core behavior against regressions.
+
+### VI. Comprehensive Testing Framework
+
+All code changes MUST include corresponding tests at appropriate pyramid levels
+(unit, integration, E2E) before merge. Testing MUST follow a structured framework
+encompassing philosophy, organization, naming, anatomy, isolation, quality criteria,
+and tooling standards. Mutation testing MUST validate that test suites detect real
+defects; mutation scores MUST remain at or above 75%.
+Rationale: structured testing discipline ensures tests are maintainable, reliable,
+and actually protect against defects.
+
+## Testing Framework
+
+### 1. Testing Philosophy
+
+All test suites MUST follow Test-Driven Development (TDD) principles with the
+RED-GREEN-REFACTOR cycle. Write tests FIRST before implementation. Generate tests
+from specifications and acceptance criteria, never from implementation details.
+This approach ensures specifications drive code, tests serve as living documentation,
+and refactoring confidence is maximized.
+
+### 2. Coverage Requirements
+
+Test suites MUST follow the Testing Pyramid distribution:
+
+- **70% Unit Tests**: Services, utilities, business logic, pure functions.
+- **20% Integration Tests**: API endpoints, database operations, cross-component interactions.
+- **10% E2E Tests**: Critical user workflows and happy-path journeys only.
+
+Coverage targets (enforced by CI):
+
+- **Line coverage**: 80% minimum
+- **Branch coverage**: 75% minimum
+- **Mutation score**: 75% minimum (Stryker)
+
+Static analysis MUST include TypeScript strict mode and ESLint (zero warnings on main).
+
+### 3. Test Types & Organization
+
+- **Unit tests**: `tests/unit/**/*.test.ts` (mirror `src/` directory structure)
+- **Integration tests**: `tests/integration/**/*.test.ts` (group by feature/endpoint)
+- **E2E tests**: `tests/e2e/**/*.spec.ts` (group by user journey)
+
+Maintain one test file per source file for unit tests. Use descriptive directory names
+that correspond to the modules being tested.
+
+### 4. Naming Conventions
+
+- **Test files**: `ComponentName.test.ts` for unit and integration tests.
+- **E2E files**: `user-journey-name.spec.ts` (kebab-case for file names).
+- **Test suites**: `describe('ComponentName', ...)` or `describe('Feature: User Login', ...)`.
+- **Test cases**: `it('should do X when Y happens', ...)` (clear, behavior-focused).
+
+All names MUST be intention-revealing and describe the expected behavior, not the
+test implementation.
+
+### 5. Test Anatomy
+
+Tests MUST follow the **Arrange-Act-Assert (AAA)** pattern:
+
+- **Arrange**: Set up test data, mocks, and initial state.
+- **Act**: Execute the code under test.
+- **Assert**: Verify the result against expected behavior.
+
+Test setup MUST use `beforeEach` (not `beforeAll`) to ensure test isolation and
+independence. Each test MUST run in isolation; tests MUST be runnable in any order
+and produce identical results. Global mutable state MUST NOT be shared between tests.
+
+### 6. Mocking & Test Data
+
+- **Mock**: External services (email, payment gateways, third-party APIs).
+- **Stub**: Time-dependent functions (`Date.now()`, timers, random generators).
+- **Fake**: In-memory databases for unit and integration tests.
+
+Use test fixtures for complex data setup; extract reusable helpers like
+`createTestUser()`, `setupMockEmailService()`, `createAuthToken()`.
+
+DO NOT mock code you own, simple utilities, or pure functions. Mocking reduces
+test value and increases brittleness. Use real implementations for your own code.
+
+### 7. Quality Criteria
+
+**What makes a good test:**
+
+- Tests observable behavior (inputs, outputs, side effects), NOT implementation details.
+- Has meaningful assertions—never tautological (e.g., `expect(x).toBe(x)`).
+- Tests ONE thing (single responsibility); avoid "test god" patterns.
+- Is FAST: <1 second for unit tests, <5 seconds for integration tests.
+- Is DETERMINISTIC: produces identical results on every run, never flaky.
+
+**Quality gates enforced in CI:**
+
+- Mutation score MUST be ≥75% (Stryker); low mutation scores indicate weak tests.
+- Zero tautological assertions; code review MUST reject meaningless assertions.
+- All expected values (test "oracles") MUST be validated by a human; no copy-pasted
+  results without verification.
+- Line coverage ≥80%, branch coverage ≥75%.
+
+**Anti-patterns to avoid:**
+
+- Testing private methods or internal state (tests should be decoupled from implementation).
+- Interdependent tests (test order MUST NOT matter).
+- Brittle tests that break on harmless refactoring.
+- Flaky tests (intermittent failures due to timing, randomness, or ordering).
+- Tests without assertions (pointless test runs).
+- Copy-pasted test logic (extract reusable helpers instead).
+
+### 8. Tools & Frameworks
+
+**Static Analysis:**
+
+- **TypeScript**: Strict mode MUST be enabled (`"strict": true`).
+- **ESLint**: Zero warnings on main branch; auto-fix in CI.
+
+**Unit & Integration Testing:**
+
+- **Framework**: Jest 29.x with ts-jest for TypeScript support.
+- **Assertion Library**: Jest's built-in `expect()` API.
+- **Mocking**: Jest mocks + MSW (Mock Service Worker) for HTTP mocking.
+
+**E2E Testing:**
+
+- **Framework**: Playwright 1.40+ (Chromium as primary browser).
+- **Optional**: Stagehand for AI-native browser automation (for complex flows).
+
+**Coverage & Quality:**
+
+- **Coverage Tool**: Jest built-in coverage reporter (80% line, 75% branch targets).
+- **Mutation Testing**: Stryker (75% score minimum; validates test effectiveness).
+
+**Execution Commands:**
+
+```
+npm run typecheck        # Run TypeScript type checking
+npm run lint             # Run ESLint (zero warnings required)
+npm test                 # Run all tests (unit + integration + E2E)
+npm run test:unit        # Unit tests only
+npm run test:integration # Integration tests only
+npm run test:e2e         # E2E tests only
+npm run test:coverage    # Generate coverage report (80% gate)
+npm run test:mutation    # Run Stryker mutation testing (75% gate)
+```
+
+**Pre-commit Hook:** MUST run `typecheck`, `lint`, and `test:unit` before allowing commits.
+
+**CI/CD Pipeline (main branch):** MUST run all checks (typecheck, lint, all tests,
+coverage validation, mutation testing) and MUST NOT merge if any gate fails.
 
 ## Engineering Standards
 
@@ -69,16 +212,20 @@ Rationale: a minimum coverage gate protects core behavior against regressions.
 - Linting and formatting rules MUST be automated in CI.
 - Every code change touching business logic MUST include corresponding test updates.
 - Public API and domain-level symbols MUST remain JSDoc-complete.
+- All testing MUST follow the Testing Framework specification above.
 
 ## Workflow and Quality Gates
 
-- Plan phase MUST include a Constitution Check that evaluates all five principles.
+- Plan phase MUST include a Constitution Check that evaluates all six principles
+  (Clean Code, Strict Mode, Documentation, Testing Pyramid, Coverage Gate, Testing Framework).
 - Specification phase MUST define quality requirements for strict typing,
-  documentation, and testing obligations.
+  documentation, and comprehensive testing (coverage, pyramid layers, mutation gates).
 - Task generation MUST include explicit tasks for strict-mode configuration,
-  JSDoc updates, test implementation across pyramid layers, and coverage validation.
+  JSDoc updates, test implementation across pyramid layers, coverage validation,
+  mutation testing setup, and tool configuration.
 - Code review MUST reject changes that violate any constitutional MUST unless an
-  approved exception is recorded with owner, scope, and expiration date.
+  approved exception is recorded with owner, scope, and expiration date. All testing
+  MUST conform to the Testing Framework specification.
 
 ## Governance
 
@@ -100,9 +247,9 @@ Versioning policy:
 Compliance review expectations:
 
 - Every plan, spec, task list, and pull request MUST include constitution compliance
-  evidence.
+  evidence (all six principles).
 - Exceptions MUST include rationale, owner, and expiry date.
-- Quarterly audits SHOULD verify that strict mode, JSDoc coverage, and the testing
-  pyramid remain enforced.
+- Quarterly audits SHOULD verify that strict mode, JSDoc coverage, testing pyramid,
+  coverage gates, and mutation testing remain enforced and effective.
 
-**Version**: 1.0.0 | **Ratified**: 2026-05-12 | **Last Amended**: 2026-05-12
+**Version**: 1.1.0 | **Ratified**: 2026-05-12 | **Last Amended**: 2026-05-13
