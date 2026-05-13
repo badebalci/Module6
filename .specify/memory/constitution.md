@@ -125,44 +125,88 @@ Test setup MUST use `beforeEach` (not `beforeAll`) to ensure test isolation and
 independence. Each test MUST run in isolation; tests MUST be runnable in any order
 and produce identical results. Global mutable state MUST NOT be shared between tests.
 
-### 6. Mocking & Test Data
-
-- **Mock**: External services (email, payment gateways, third-party APIs).
-- **Stub**: Time-dependent functions (`Date.now()`, timers, random generators).
-- **Fake**: In-memory databases for unit and integration tests.
-
-Use test fixtures for complex data setup; extract reusable helpers like
-`createTestUser()`, `setupMockEmailService()`, `createAuthToken()`.
-
-DO NOT mock code you own, simple utilities, or pure functions. Mocking reduces
 test value and increases brittleness. Use real implementations for your own code.
 
-### 7. Quality Criteria
+### 6. Mocking & Test Data
+
+- **Mock**: External services (email, payment gateways, third-party APIs). Use Jest mocks or MSW for HTTP APIs.
+- **Stub**: Time-dependent functions (`Date.now()`, timers, random generators) to ensure deterministic results.
+- **Fake**: In-memory databases for unit and integration tests (e.g., sqlite-memory, in-memory MongoDB).
+- Use test fixtures for complex or repeated data setup.
+- Extract reusable helpers such as `createTestUser()`, `setupMockAPI()`, `setupMockEmailService()`.
+- DO NOT mock code you own, simple utilities, or pure functions—prefer real implementations for your own code to maximize test value and minimize brittleness.
+
+All mocks, stubs, and fakes MUST be reset between tests to ensure isolation. Prefer factory functions for test data. Avoid global state in test helpers.
+
+### 7. Quality Criteria (CRITICAL)
+
+### 8. Tools & Frameworks
+
+**Static Analysis:**
+
+- **TypeScript**: Strict mode MUST be enabled (`"strict": true` in `tsconfig.json`).
+- **ESLint**: Airbnb config required; zero warnings on main branch; auto-fix in CI.
+
+**Unit & Integration Testing:**
+
+- **Framework**: Jest 29.x with ts-jest for TypeScript support.
+- **Assertion Library**: Jest's built-in `expect()` API.
+- **Mocking**: Jest mocks and MSW (Mock Service Worker) for HTTP mocking.
+
+**E2E Testing:**
+
+- **Framework**: Playwright 1.40+ (Chromium as primary browser).
+- **Optional**: Stagehand for AI-native browser automation (for complex flows).
+
+**Coverage & Quality:**
+
+- **Coverage Tool**: Jest built-in coverage reporter (80% line, 75% branch targets).
+- **Mutation Testing**: Stryker (75% score minimum; validates test effectiveness).
+
+**Execution Commands (npm):**
+
+```
+npm run typecheck        # Run TypeScript type checking
+npm run lint             # Run ESLint (zero warnings required)
+npm test                 # Run all tests (unit + integration + E2E)
+npm run test:unit        # Unit tests only
+npm run test:integration # Integration tests only
+npm run test:e2e         # E2E tests only
+npm run test:coverage    # Generate coverage report (80% gate)
+npm run test:mutation    # Run Stryker mutation testing (75% gate)
+```
+
+**Pre-commit Hook:** MUST run `typecheck`, `lint`, and `test:unit` before allowing commits.
+
+**CI/CD Pipeline (main branch):** MUST run all checks (typecheck, lint, all tests, coverage validation, mutation testing) and MUST NOT merge if any gate fails.
 
 **What makes a good test:**
 
-- Tests observable behavior (inputs, outputs, side effects), NOT implementation details.
-- Has meaningful assertions—never tautological (e.g., `expect(x).toBe(x)`).
-- Tests ONE thing (single responsibility); avoid "test god" patterns.
-- Is FAST: <1 second for unit tests, <5 seconds for integration tests.
-- Is DETERMINISTIC: produces identical results on every run, never flaky.
+- Tests observable behavior (inputs, outputs, side effects), NOT implementation details
+- Has meaningful assertions—never tautological (e.g., `expect(x).toBe(x)`)
+- Tests ONE thing (single responsibility); avoid multi-purpose or "god" tests
+- Is FAST: <1 second for unit tests, <5 seconds for integration tests
+- Is DETERMINISTIC: produces identical results on every run, never flaky
 
-**Quality gates enforced in CI:**
+**Quality gates (enforced in CI):**
 
-- Mutation score MUST be ≥75% (Stryker); low mutation scores indicate weak tests.
-- Zero tautological assertions; code review MUST reject meaningless assertions.
-- All expected values (test "oracles") MUST be validated by a human; no copy-pasted
-  results without verification.
-- Line coverage ≥80%, branch coverage ≥75%.
+- Mutation score: 75% minimum (use Stryker for TypeScript/Node.js)
+- No always-true (tautological) assertions; code review MUST reject meaningless assertions
+- All expected values (test oracles) MUST be validated by a human (no copy-paste of outputs)
+- Coverage: 80% line, 75% branch (Jest coverage reporter)
 
 **Anti-patterns to avoid:**
 
-- Testing private methods or internal state (tests should be decoupled from implementation).
-- Interdependent tests (test order MUST NOT matter).
-- Brittle tests that break on harmless refactoring.
-- Flaky tests (intermittent failures due to timing, randomness, or ordering).
-- Tests without assertions (pointless test runs).
-- Copy-pasted test logic (extract reusable helpers instead).
+- Testing private methods or internal state (tests should be decoupled from implementation)
+- Interdependent tests (test order MUST NOT matter)
+- Brittle tests (break on harmless refactoring)
+- Flaky tests (intermittent failures due to timing, randomness, or ordering)
+- Tests without assertions (pointless test runs)
+- Copy-pasted test logic (extract reusable helpers instead)
+
+**Mutation Testing Tool:**
+
+- Use Stryker for mutation testing in TypeScript/Node.js projects. Mutation score MUST be tracked in CI and PRs. Low mutation scores indicate weak or untrustworthy tests and MUST be addressed before merge.
 
 ### 8. Tools & Frameworks
 
